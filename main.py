@@ -94,6 +94,27 @@ def create_product():
 
     return jsonify({"message": f"Product '{name}' was created successfully."}), 201
 
+@app.post('/users')
+def create_users():
+    with Session() as session:
+        data = request.get_json()
+        name = data.get("name")
+        password = data.get("password")
+        email = data.get("email")
+
+        if not name or not password or not email:
+            return jsonify({"message": "Please provide all required fields."}), 400
+
+        session.execute(text("""INSERT INTO users (name, password, email)
+                                            VALUES (:name, :password, :email)
+                                        """),
+                                            {"name": name, "password": password, "email": email})
+        session.commit()
+
+    return jsonify({"message": f"User created successfully."}), 201
+
+
+
 @app.delete('/products/<int:product_id>')
 def delete_product(product_id):
     with Session() as session:
@@ -103,6 +124,13 @@ def delete_product(product_id):
 
     return jsonify({"message": f"Product with id {product_id} was deleted."}), 201
 
+@app.delete('/users/<int:users_id>')
+def delete_users(users_id):
+    with Session() as session:
+        session.execute(text("DELETE FROM users WHERE id = :id"),
+                        {"id": users_id})
+        session.commit()
 
+    return jsonify({"message": f"User with id {users_id} was deleted."}), 200
 
 
